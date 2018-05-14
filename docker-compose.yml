@@ -1,0 +1,59 @@
+version: "3"
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./fleetman.template:/etc/nginx/conf.d/fleetman.template
+    #deploy:
+     # placement:
+     #   constraints: [node.role == manager]
+    environment:
+      - NGINX_PORT=12345
+    command: /bin/bash -c "yes | cp -rf /etc/nginx/conf.d/fleetman.template /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    networks:
+      fleetman:
+
+  db:
+    image: mysql:5
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: fleetman
+      MYSQL_USER: fleetman_user
+      MYSQL_PASSWORD: fleetman123
+    volumes:
+      - mysql:/var/lib/mysql/
+    networks:
+      fleetman:
+
+  api:
+    image: magnaz/traccar:debian
+    depends_on:
+      - db
+    ports:
+      - "5000-5150:5000-5150"
+      - "8082:8082"
+    volumes:
+      - data-db:/opt/traccar/data/database
+      - ./conf/traccar.xml:/opt/traccar/conf/traccar.xml
+    networks:
+      fleetman:
+
+  app:
+    image: docker.codechem.com/fleetman:latest
+    depends_on:
+      - api
+    environment:
+      APP_PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      fleetman:
+
+networks:
+  fleetman:
+
+volumes:
+  data-db:
+  mysql:
