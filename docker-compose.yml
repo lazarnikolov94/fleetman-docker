@@ -32,7 +32,7 @@ services:
     depends_on:
       - db
     ports:
-      - "5000-5150:5000-5150"
+      - "5001-5150:5001-5150"
       - "8082:8082"
     volumes:
       - data-db:/opt/traccar/data/database
@@ -45,9 +45,9 @@ services:
     depends_on:
       - api
     environment:
-      APP_PORT: 8081
+      APP_PORT: 8083
     ports:
-      - "8081:8081"
+      - "8083:8083"
     networks:
       fleetman:
 
